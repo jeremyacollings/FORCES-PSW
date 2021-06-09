@@ -23,7 +23,7 @@ com.dat <- cbind.data.frame("site" = mydata$identifiers$site, "area" = mydata$id
                             "year" = year, "worm.mass" = worm.mass, "worm.count" = worm.count,
                             "psw" = psw, round(mydata$veg_noPSW))
 
-com_bund <- mvabund(com.dat[,9:93]) # transforms community data into mvabund appropriate object
+com_bund <- mvabund(com.dat[,9:91]) # transforms community data into mvabund appropriate object
 
 ### FITTING MODELS
 
@@ -132,7 +132,7 @@ com.dat2 <- cbind.data.frame("site" = mydata$identifiers$site, "area" = mydata$i
                          "year" = year, "worm.mass" = worm.mass, "worm.count" = worm.count,
                          "psw" = psw, round(notinvasives))
 
-com_bund2 <- mvabund(com.dat2[,9:86])
+com_bund2 <- mvabund(com.dat2[,9:84])
 
 ### FITTING MODELS
 
