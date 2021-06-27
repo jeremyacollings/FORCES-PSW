@@ -18,12 +18,15 @@ plot_type <- as.factor(paste(mydata$identifiers$site,
                              mydata$identifiers$area, 
                              mydata$identifiers$plot, 
                              sep = ""))
+fencing <- ifelse(mydata$identifiers$plot == "F", "F", "O")
+invaded <- ifelse(mydata$identifiers$plot == "N", "uninv", "inv")
 com.dat <- cbind.data.frame("site" = mydata$identifiers$site, "area" = mydata$identifiers$area, 
-                            "plot" = mydata$identifiers$plot, "plot_type" = plot_type,
+                            "plot" = mydata$identifiers$plot, "fencing" = fencing, 
+                            "invaded" = invaded, "plot_type" = plot_type,
                             "year" = year, "worm.mass" = worm.mass, "worm.count" = worm.count,
                             "psw" = psw, round(mydata$veg_noPSW))
 
-com_bund <- mvabund(com.dat[,9:91]) # transforms community data into mvabund appropriate object
+com_bund <- mvabund(com.dat[,11:93]) # transforms community data into mvabund appropriate object
 
 ### FITTING MODELS
 
