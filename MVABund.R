@@ -131,11 +131,12 @@ notinvasives <- all[-c(6, 13, 22, 40, 44, 63, 64)]
 natives <- notinvasives[-c(6, 15, 23, 25, 30, 33, 36, 37, 43, 51, 55, 58, 64, 65, 70:78)]
 
 com.dat2 <- cbind.data.frame("site" = mydata$identifiers$site, "area" = mydata$identifiers$area, 
-                         "plot" = mydata$identifiers$plot, "plot_type" = plot_type,
+                         "plot" = mydata$identifiers$plot, "plot_type" = plot_type, 
+                         "fencing" = fencing, "invaded" = invaded,
                          "year" = year, "worm.mass" = worm.mass, "worm.count" = worm.count,
                          "psw" = psw, round(notinvasives))
 
-com_bund2 <- mvabund(com.dat2[,9:84])
+com_bund2 <- mvabund(com.dat2[,11:86])
 
 ### FITTING MODELS
 
@@ -225,11 +226,12 @@ saveRDS(lr_year2, "Year Non-Invasive Community.rds")
 ### PREPARING DATA FOR MVABUND
 
 com.dat3 <- cbind.data.frame("site" = mydata$identifiers$site, "area" = mydata$identifiers$area, 
-                         "plot" = mydata$identifiers$plot, "plot_type" = plot_type,
+                         "plot" = mydata$identifiers$plot, "plot_type" = plot_type, 
+                         "fencing" = fencing, "invaded" = invaded,
                          "year" = year, "worm.mass" = worm.mass, "worm.count" = worm.count,
                          "psw" = psw, round(natives))
 
-com_bund3 <- mvabund(com.dat3[,9:63])
+com_bund3 <- mvabund(com.dat3[,11:65])
 
 ### FITTING MODELS
 

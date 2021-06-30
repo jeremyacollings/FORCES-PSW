@@ -8,9 +8,6 @@ library(readxl)
 
 ##### IMPORT DATA #####
 
-setwd("C:\\Users\\Jeremy\\Desktop")
-list.files()
-
 veg <- read_xlsx("FORCES Veg_Reduced.xlsx")
 veg[veg > 0 & veg <= 5] <- 2.5
 veg[veg > 5 & veg <= 25] <- 15
