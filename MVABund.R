@@ -6,7 +6,7 @@ library(tidyverse)
 library(mvabund)
 library(patchwork)
 
-##### I. Native PLANT COMMUNITY
+##### I. Whole PLANT COMMUNITY
 
 ### PREPARING DATA FOR MVABUND
 
@@ -26,8 +26,11 @@ com.dat <- cbind.data.frame("site" = mydata$identifiers$site, "area" = mydata$id
                             "year" = year, "worm.mass" = worm.mass, "worm.count" = worm.count,
                             "psw" = psw, round(mydata$veg_noPSW))
 
-com_bund <- mvabund(com.dat[,11:93]) # transforms community data into mvabund appropriate object
+com.dat.fence <- com.dat[com.dat$invaded == "inv", ]
+com.dat.invade <- com.dat[com.dat$fencing == "O", ]
 
+com_bund_fence <- mvabund(com.dat.fence[,11:93]) # transforms community data into mvabund appropriate object
+com_bund_invade <- mvabund(com.dat.invade[,11:93])
 ### FITTING MODELS
 
 mva1 <- manyglm(com_bund ~ com.dat$year + com.dat$area + com.dat$plot +   # complete model
