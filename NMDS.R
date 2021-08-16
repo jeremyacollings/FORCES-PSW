@@ -93,8 +93,8 @@ ggplot() + geom_point(data = com.scores, aes(x = NMDS1, y = NMDS2, color = site,
   scale_color_manual(name = "Site", values = c("BM" = "royalblue4", "GL" = "goldenrod", "TG" = "green4")) + 
   scale_shape_manual(name = "Year", values = c("1" = 15, "3" = 17)) +
   theme_classic(base_size = 12) +
-  #scale_x_continuous(limits = c(-.75, .75)) +
-  #scale_y_continuous(limits = c(-.6, .6)) +
+  scale_x_continuous(limits = c(-1, 1)) +
+  scale_y_continuous(limits = c(-1, 1)) +
   theme(panel.border = element_rect(colour = "black", fill=NA, size=1))
 
 ggsave("NMDS by Site and Year.pdf")

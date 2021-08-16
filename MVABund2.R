@@ -136,4 +136,46 @@ saveRDS(YPA.I, "Whole Area Invaded.rds")
 year.I <- anova(trym.i0, trym.i8, bootID = permutations.I, p.uni = 'adjusted', test = 'LR')
 saveRDS(YPA.I, "Whole Year Invaded.rds")
 
+final.f <- manyglm(com_bund_fence ~ com.dat.fence$year + com.dat.fence$area + com.dat.fence$plot +   # complete model
+                     com.dat.fence$worm.count +
+                     com.dat.fence$year:com.dat.fence$area)
 
+final.i <- manyglm(com_bund_invade ~ com.dat.invade$year + com.dat.invade$area + com.dat.invade$plot +   # complete model
+                     com.dat.invade$worm.count + 
+                     com.dat.invade$area:com.dat.invade$plot + 
+                     com.dat.invade$year:com.dat.invade$area + com.dat.invade$year:com.dat.invade$plot + 
+                     com.dat.invade$year:com.dat.invade$area:com.dat.invade$plot)
+
+final.output.F <- anova(final.f, bootID = permutations.F, p.uni = "adjusted")
+final.output.I <- anova(final.i, bootID = permutations.I, p.uni = "adjusted")
+saveRDS(final.output.F, "MVABund Output Fencing Comparison")
+saveRDS(final.output.I, "MVABund Output Invasion Comparison")
+
+## Exploring Deviance Values
+
+tests.F <- as.data.frame(final.output.F[["uni.test"]])
+rowSums(tests.F[which(colnames(tests.F) %in% forbspp)])/rowSums(tests.F)
+rowSums(tests.F[which(colnames(tests.F) %in% gramspp)])/rowSums(tests.F)
+rowSums(tests.F[which(colnames(tests.F) %in% woodyspp)])/rowSums(tests.F)
+
+x <- as.data.frame(c(mydata[["identifiers"]], mydata[["veg_calc"]], mydata[["worms"]]))
+
+ggplot(data = x, aes(x = year, y = sumwoody, fill = area)) + geom_bar(position = "dodge", stat = "summary", fun = "mean")
+ggplot(data = x, aes(x = year, y = sumforb, fill = area)) + geom_bar(position = "dodge", stat = "summary", fun = "mean")
+ggplot(data = x, aes(x = year, y = sumgram, fill = area)) + geom_bar(position = "dodge", stat = "summary", fun = "mean")
+
+ggplot(data = x, aes(x = ew.count.mean, y = sumwoody)) + geom_point() + geom_smooth()
+ggplot(data = x, aes(x = ew.count.mean, y = sumforb)) + geom_point() + geom_smooth()
+ggplot(data = x, aes(x = ew.count.mean, y = sumgram)) + geom_point() + geom_smooth()
+
+tests.I <- as.data.frame(final.output.I[["uni.test"]])
+rowSums(tests.I[which(colnames(tests.I) %in% forbspp)])/rowSums(tests.I)
+rowSums(tests.I[which(colnames(tests.I) %in% gramspp)])/rowSums(tests.I)
+rowSums(tests.I[which(colnames(tests.I) %in% woodyspp)])/rowSums(tests.I)
+
+
+tests.F2 <- t(tests.F)
+tests.F2 %>% 
+  rename("(Intercept)" = "int", "com.dat.fence$year" = "year", "com.dat.fence$area" = "area", 
+         "dom.dat.fence$plot" = "plot", "com.dat.fence$worm.count" = "worms", 
+         "com.dat.fence$year:com.dat.fence$area" = "YA")

@@ -31,91 +31,179 @@ com.dat.invade <- com.dat[com.dat$fencing == "O", ]
 
 com_bund_fence <- mvabund(com.dat.fence[,11:93]) # transforms community data into mvabund appropriate object
 com_bund_invade <- mvabund(com.dat.invade[,11:93])
-### FITTING MODELS
 
-mva1 <- manyglm(com_bund ~ com.dat$year + com.dat$area + com.dat$plot +   # complete model
-                com.dat$worm.count + com.dat$year:com.dat$plot +
-                com.dat$area:com.dat$plot + com.dat$year:com.dat$area + 
-                com.dat$year:com.dat$plot:com.dat$area)
+### FITTING MODELS FOR FENCING
 
+trym.f0 <- manyglm(com_bund_fence ~ com.dat.fence$year + com.dat.fence$area + com.dat.fence$plot +   # complete model
+                     com.dat.fence$worm.count + 
+                     com.dat.fence$area:com.dat.fence$plot + 
+                     com.dat.fence$year:com.dat.fence$area + com.dat.fence$year:com.dat.fence$plot + 
+                     com.dat.fence$year:com.dat.fence$area:com.dat.fence$plot)
 
-mva2 <- manyglm(com_bund ~ com.dat$year + com.dat$area + com.dat$plot +    # compare count vs mass
-                  com.dat$worm.mass + com.dat$year:com.dat$plot +
-                  com.dat$area:com.dat$plot + com.dat$year:com.dat$area + 
-                  com.dat$year:com.dat$plot:com.dat$area)
+trym.f1 <- manyglm(com_bund_fence ~ com.dat.fence$year + com.dat.fence$area + com.dat.fence$plot +   # no 3way
+                     com.dat.fence$worm.count + 
+                     com.dat.fence$area:com.dat.fence$plot + 
+                     com.dat.fence$year:com.dat.fence$area + com.dat.fence$year:com.dat.fence$plot)
 
-mva3 <- manyglm(com_bund ~ com.dat$year + com.dat$area + com.dat$plot +   # compare three-way interaction
-                  com.dat$worm.count + com.dat$year:com.dat$plot +
-                  com.dat$area:com.dat$plot + com.dat$year:com.dat$area)
+trym.f2 <- manyglm(com_bund_fence ~ com.dat.fence$year + com.dat.fence$area + com.dat.fence$plot +   # no year:plot
+                     com.dat.fence$worm.count + 
+                     com.dat.fence$area:com.dat.fence$plot + 
+                     com.dat.fence$year:com.dat.fence$area)
 
-mva4 <- manyglm(com_bund ~ com.dat$year + com.dat$area + com.dat$plot +   # compare year-area
-                 com.dat$worm.count + com.dat$year:com.dat$plot +
-                 com.dat$area:com.dat$plot + com.dat$year:com.dat$plot:com.dat$area)
+trym.f3 <- manyglm(com_bund_fence ~ com.dat.fence$year + com.dat.fence$area + com.dat.fence$plot +   # no year:area
+                     com.dat.fence$worm.count + 
+                     com.dat.fence$area:com.dat.fence$plot + 
+                     com.dat.fence$year:com.dat.fence$plot)
 
-mva5 <- manyglm(com_bund ~ com.dat$year + com.dat$area + com.dat$plot +   # compare area-plot
-          com.dat$worm.count + com.dat$year:com.dat$plot +
-          com.dat$year:com.dat$area + com.dat$year:com.dat$plot:com.dat$area)
+trym.f4 <- manyglm(com_bund_fence ~ com.dat.fence$year + com.dat.fence$area + com.dat.fence$plot +   # no ara:plot
+                     com.dat.fence$worm.count +
+                     com.dat.fence$year:com.dat.fence$area + com.dat.fence$year:com.dat.fence$plot)
 
-mva6 <- manyglm(com_bund ~ com.dat$year + com.dat$area + com.dat$plot +   # compare year-plot
-          com.dat$worm.count + com.dat$area:com.dat$plot + 
-          com.dat$year:com.dat$area + com.dat$year:com.dat$plot:com.dat$area)
+trym.f5 <- manyglm(com_bund_fence ~ com.dat.fence$year + com.dat.fence$area + com.dat.fence$plot +    # no worms
+                     com.dat.fence$area:com.dat.fence$plot + 
+                     com.dat.fence$year:com.dat.fence$area + com.dat.fence$year:com.dat.fence$plot + 
+                     com.dat.fence$year:com.dat.fence$area:com.dat.fence$plot)
 
-mva7 <- manyglm(com_bund ~ com.dat$year + com.dat$area + com.dat$plot +   # compare worms
-          com.dat$year:com.dat$plot + com.dat$area:com.dat$plot + 
-          com.dat$year:com.dat$area + com.dat$year:com.dat$plot:com.dat$area)
+trym.f6 <- manyglm(com_bund_fence ~ com.dat.fence$year + com.dat.fence$area +    # no plot
+                     com.dat.fence$worm.count + 
+                     com.dat.fence$year:com.dat.fence$area)
 
-mva8 <- manyglm(com_bund ~ com.dat$year + com.dat$area + com.dat$worm.count) # compare plot
+trym.f7 <- manyglm(com_bund_fence ~ com.dat.fence$year + com.dat.fence$plot +   # no area
+                     com.dat.fence$worm.count + com.dat.fence$year:com.dat.fence$plot)
 
-mva9 <- manyglm(com_bund ~ com.dat$year + com.dat$plot + com.dat$worm.count) # compare area
+trym.f8 <- manyglm(com_bund_fence ~ com.dat.fence$area + com.dat.fence$plot +   # no year
+                     com.dat.fence$worm.count + 
+                     com.dat.fence$area:com.dat.fence$plot)
 
-mva10 <- manyglm(com_bund ~ com.dat$area + com.dat$plot + com.dat$worm.count) # compare year
+control.F <- how(within = Within(type = 'none'),
+                 plots = Plots(strata = com.dat.fence$plot_type, type = 'free'),
+                 nperm = 1000)
 
-### MODEL COMPARISON
+permutations.F <- shuffleSet(nrow(com_bund_fence), control = control.F)
 
-# to account for nested data
+YPA.F <- anova(trym.f0, trym.f1, bootID = permutations.F, p.uni = 'adjusted', test = 'LR')
+saveRDS(YPA.F, "Whole YPA Fenced.rds")
+YP.F <- anova(trym.f0, trym.f2, bootID = permutations.F, p.uni = 'adjusted', test = 'LR')
+saveRDS(YP.F, "Whole YP Fenced.rds")
+YA.F <- anova(trym.f0, trym.f3, bootID = permutations.F, p.uni = 'adjusted', test = 'LR')
+saveRDS(YA.F, "Whole YA Fenced.rds")
+AP.F <- anova(trym.f0, trym.f4, bootID = permutations.F, p.uni = 'adjusted', test = 'LR')
+saveRDS(AP.F, "Whole AP Fenced.rds")
+worms.F <- anova(trym.f0, trym.f5, bootID = permutations.F, p.uni = 'adjusted', test = 'LR')
+saveRDS(worms.F, "Whole Worms Fenced.rds")
+plot.F <- anova(trym.f0, trym.f6, bootID = permutations.F, p.uni = 'adjusted', test = 'LR')
+saveRDS(YPA.F, "Whole Plot Fenced.rds")
+area.F <- anova(trym.f0, trym.f7, bootID = permutations.F, p.uni = 'adjusted', test = 'LR')
+saveRDS(YPA.F, "Whole Area Fenced.rds")
+year.F <- anova(trym.f0, trym.f8, bootID = permutations.F, p.uni = 'adjusted', test = 'LR')
+saveRDS(YPA.F, "Whole Year Fenced.rds")
 
-control <- how(within = Within(type = 'none'),
-               plots = Plots(strata = com.dat$plot_type, type = 'free'),
-               nperm = 1000)
+m.f.final <- manyglm(com_bund_fence ~ com.dat.fence$year + com.dat.fence$area +
+                       com.dat.fence$plot + com.dat.fence$worm.count + 
+                       com.dat.fence$year:com.dat.fence$area)
 
-permutations <- shuffleSet(nrow(com_bund), control = control)
+### FITTING MODELS FOR INVASION 
 
-lr_worm.measure <- anova(mva1, mva2, bootID = permutations, p.uni = 'adjusted', test = 'LR')
+control.I <- how(within = Within(type = 'none'),
+                 plots = Plots(strata = com.dat.invade$plot_type, type = 'free'),
+                 nperm = 1000)
 
-lr_YPA <- anova(mva1, mva3, bootID = permutations, p.uni = 'adjusted', test = 'LR')
-lr_YPA
+permutations.I <- shuffleSet(nrow(com_bund_invade), control = control.I)
 
-lr_YA <- anova(mva1, mva4, bootID = permutations, p.uni = 'adjusted', test = 'LR')
-lr_YA
+trym.i0 <- manyglm(com_bund_invade ~ com.dat.invade$year + com.dat.invade$area + com.dat.invade$plot +   # complete model
+                     com.dat.invade$worm.count + 
+                     com.dat.invade$area:com.dat.invade$plot + 
+                     com.dat.invade$year:com.dat.invade$area + com.dat.invade$year:com.dat.invade$plot + 
+                     com.dat.invade$year:com.dat.invade$area:com.dat.invade$plot)
 
-lr_AP <- anova(mva1, mva5, bootID = permutations, p.uni = 'adjusted', test = 'LR')
-lr_AP
+trym.i1 <- manyglm(com_bund_invade ~ com.dat.invade$year + com.dat.invade$area + com.dat.invade$plot +   # no 3way
+                     com.dat.invade$worm.count + 
+                     com.dat.invade$area:com.dat.invade$plot + 
+                     com.dat.invade$year:com.dat.invade$area + com.dat.invade$year:com.dat.invade$plot)
 
-lr_YP <- anova(mva1, mva6, bootID = permutations, p.uni = 'adjusted', test = 'LR')
-lr_YP
+trym.i2 <- manyglm(com_bund_invade ~ com.dat.invade$year + com.dat.invade$area + com.dat.invade$plot +   # no year:plot
+                     com.dat.invade$worm.count + 
+                     com.dat.invade$area:com.dat.invade$plot + 
+                     com.dat.invade$year:com.dat.invade$area)
 
-lr_worm <- anova(mva1, mva7, bootID = permutations, p.uni = 'adjusted', test = 'LR')
-lr_worm
+trym.i3 <- manyglm(com_bund_invade ~ com.dat.invade$year + com.dat.invade$area + com.dat.invade$plot +   # no year:area
+                     com.dat.invade$worm.count + 
+                     com.dat.invade$area:com.dat.invade$plot + 
+                     com.dat.invade$year:com.dat.invade$plot)
 
-lr_plot <- anova(mva1, mva8, bootID = permutations, p.uni = 'adjusted', test = 'LR')
-lr_plot
+trym.i4 <- manyglm(com_bund_invade ~ com.dat.invade$year + com.dat.invade$area + com.dat.invade$plot +   # no ara:plot
+                     com.dat.invade$worm.count +
+                     com.dat.invade$year:com.dat.invade$area + com.dat.invade$year:com.dat.invade$plot)
 
-lr_area <- anova(mva1, mva9, bootID = permutations, p.uni = 'adjusted', test = 'LR')
-lr_area
+trym.i5 <- manyglm(com_bund_invade ~ com.dat.invade$year + com.dat.invade$area + com.dat.invade$plot +    # no worms
+                     com.dat.invade$area:com.dat.invade$plot + 
+                     com.dat.invade$year:com.dat.invade$area + com.dat.invade$year:com.dat.invade$plot + 
+                     com.dat.invade$year:com.dat.invade$area:com.dat.invade$plot)
 
-lr_year <- anova(mva1, mva10, bootID = permutations, p.uni = 'adjusted', test = 'LR')
-lr_year
+trym.i6 <- manyglm(com_bund_invade ~ com.dat.invade$year + com.dat.invade$area +    # no plot
+                     com.dat.invade$worm.count + 
+                     com.dat.invade$year:com.dat.invade$area)
 
-# I dont know why the worm measurement comparisons arent working... saving without for now
+trym.i7 <- manyglm(com_bund_invade ~ com.dat.invade$year + com.dat.invade$plot +   # no area
+                     com.dat.invade$worm.count + com.dat.invade$year:com.dat.invade$plot)
 
-saveRDS(lr_YPA, "YPA Whole Community.rds")
-saveRDS(lr_YA, "YA Whole Community.rds")
-saveRDS(lr_AP, "AP Whole Community.rds")
-saveRDS(lr_YP, "YP Whole Community.rds")
-saveRDS(lr_worm, "Worm Whole Community.rds")
-saveRDS(lr_plot, "Plot Whole Community.rds")
-saveRDS(lr_area, "Area Whole Community.rds")
-saveRDS(lr_year, "Year Whole Community.rds")
+trym.i8 <- manyglm(com_bund_invade ~ com.dat.invade$area + com.dat.invade$plot +   # no year
+                     com.dat.invade$worm.count + 
+                     com.dat.invade$area:com.dat.invade$plot)
+
+YPA.I <- anova(trym.i0, trym.i1, bootID = permutations.I, p.uni = 'adjusted', test = 'LR')
+saveRDS(YPA.I, "Whole YPA Invaded.rds")
+YP.I <- anova(trym.i0, trym.i2, bootID = permutations.I, p.uni = 'adjusted', test = 'LR')
+saveRDS(YP.I, "Whole YP Invaded.rds")
+YA.I <- anova(trym.i0, trym.i3, bootID = permutations.I, p.uni = 'adjusted', test = 'LR')
+saveRDS(YA.I, "Whole YA Invaded.rds")
+AP.I <- anova(trym.i0, trym.i4, bootID = permutations.I, p.uni = 'adjusted', test = 'LR')
+saveRDS(AP.I, "Whole AP Invaded.rds")
+worms.I <- anova(trym.i0, trym.i5, bootID = permutations.I, p.uni = 'adjusted', test = 'LR')
+saveRDS(worms.I, "Whole Worms Invaded.rds")
+plot.I <- anova(trym.i0, trym.i6, bootID = permutations.I, p.uni = 'adjusted', test = 'LR')
+saveRDS(YPA.I, "Whole Plot Invaded.rds")
+area.I <- anova(trym.i0, trym.i7, bootID = permutations.I, p.uni = 'adjusted', test = 'LR')
+saveRDS(YPA.I, "Whole Area Invaded.rds")
+year.I <- anova(trym.i0, trym.i8, bootID = permutations.I, p.uni = 'adjusted', test = 'LR')
+saveRDS(YPA.I, "Whole Year Invaded.rds")
+
+final.f <- manyglm(com_bund_fence ~ com.dat.fence$year + com.dat.fence$area + com.dat.fence$plot +   # complete model
+                     com.dat.fence$worm.count +
+                     com.dat.fence$year:com.dat.fence$area)
+
+final.i <- manyglm(com_bund_invade ~ com.dat.invade$year + com.dat.invade$area + com.dat.invade$plot +   # complete model
+                     com.dat.invade$worm.count + 
+                     com.dat.invade$area:com.dat.invade$plot + 
+                     com.dat.invade$year:com.dat.invade$area + com.dat.invade$year:com.dat.invade$plot + 
+                     com.dat.invade$year:com.dat.invade$area:com.dat.invade$plot)
+
+final.output.F <- anova(final.f, bootID = permutations.F, p.uni = "adjusted")
+final.output.I <- anova(final.i, bootID = permutations.I, p.uni = "adjusted")
+saveRDS(final.output.F, "MVABund Output Fencing Comparison")
+saveRDS(final.output.I, "MVABund Output Invasion Comparison")
+
+## Exploring Deviance Values
+
+tests.F <- as.data.frame(final.output.F[["uni.test"]])
+rowSums(tests.F[which(colnames(tests.F) %in% forbspp)])/rowSums(tests.F)
+rowSums(tests.F[which(colnames(tests.F) %in% gramspp)])/rowSums(tests.F)
+rowSums(tests.F[which(colnames(tests.F) %in% woodyspp)])/rowSums(tests.F)
+
+x <- as.data.frame(c(mydata[["identifiers"]], mydata[["veg_calc"]], mydata[["worms"]]))
+
+ggplot(data = x, aes(x = year, y = sumwoody, fill = area)) + geom_bar(position = "dodge", stat = "summary", fun = "mean")
+ggplot(data = x, aes(x = year, y = sumforb, fill = area)) + geom_bar(position = "dodge", stat = "summary", fun = "mean")
+ggplot(data = x, aes(x = year, y = sumgram, fill = area)) + geom_bar(position = "dodge", stat = "summary", fun = "mean")
+
+ggplot(data = x, aes(x = ew.count.mean, y = sumwoody)) + geom_point() + geom_smooth()
+ggplot(data = x, aes(x = ew.count.mean, y = sumforb)) + geom_point() + geom_smooth()
+ggplot(data = x, aes(x = ew.count.mean, y = sumgram)) + geom_point() + geom_smooth()
+
+tests.I <- as.data.frame(final.output.I[["uni.test"]])
+rowSums(tests.I[which(colnames(tests.I) %in% forbspp)])/rowSums(tests.I)
+rowSums(tests.I[which(colnames(tests.I) %in% gramspp)])/rowSums(tests.I)
+rowSums(tests.I[which(colnames(tests.I) %in% woodyspp)])/rowSums(tests.I)
 
 
 
@@ -139,7 +227,388 @@ com.dat2 <- cbind.data.frame("site" = mydata$identifiers$site, "area" = mydata$i
                          "year" = year, "worm.mass" = worm.mass, "worm.count" = worm.count,
                          "psw" = psw, round(notinvasives))
 
-com_bund2 <- mvabund(com.dat2[,11:86])
+com.dat.fence2 <- com.dat2[com.dat2$invaded == "inv", ]
+com.dat.invade2 <- com.dat2[com.dat2$fencing == "O", ]
+
+com_bund_fence2 <- mvabund(com.dat.fence2[,11:88]) # transforms community data into mvabund appropriate object
+com_bund_invade2 <- mvabund(com.dat.invade2[,11:88])
+
+### FITTING MODELS FOR FENCING
+
+trym2.f0 <- manyglm(com_bund_fence2 ~ com.dat.fence2$year + com.dat.fence2$area + com.dat.fence2$plot +   # complete model
+                     com.dat.fence2$worm.count + 
+                     com.dat.fence2$area:com.dat.fence2$plot + 
+                     com.dat.fence2$year:com.dat.fence2$area + com.dat.fence2$year:com.dat.fence2$plot + 
+                     com.dat.fence2$year:com.dat.fence2$area:com.dat.fence2$plot)
+
+trym2.f1 <- manyglm(com_bund_fence2 ~ com.dat.fence2$year + com.dat.fence2$area + com.dat.fence2$plot +   # no 3way
+                     com.dat.fence2$worm.count + 
+                     com.dat.fence2$area:com.dat.fence2$plot + 
+                     com.dat.fence2$year:com.dat.fence2$area + com.dat.fence2$year:com.dat.fence2$plot)
+
+trym2.f2 <- manyglm(com_bund_fence2 ~ com.dat.fence2$year + com.dat.fence2$area + com.dat.fence2$plot +   # no year:plot
+                     com.dat.fence2$worm.count + 
+                     com.dat.fence2$area:com.dat.fence2$plot + 
+                     com.dat.fence2$year:com.dat.fence2$area)
+
+trym2.f3 <- manyglm(com_bund_fence2 ~ com.dat.fence2$year + com.dat.fence2$area + com.dat.fence2$plot +   # no year:area
+                     com.dat.fence2$worm.count + 
+                     com.dat.fence2$area:com.dat.fence2$plot + 
+                     com.dat.fence2$year:com.dat.fence2$plot)
+
+trym2.f4 <- manyglm(com_bund_fence2 ~ com.dat.fence2$year + com.dat.fence2$area + com.dat.fence2$plot +   # no ara:plot
+                     com.dat.fence2$worm.count +
+                     com.dat.fence2$year:com.dat.fence2$area + com.dat.fence2$year:com.dat.fence2$plot)
+
+trym2.f5 <- manyglm(com_bund_fence2 ~ com.dat.fence2$year + com.dat.fence2$area + com.dat.fence2$plot +    # no worms
+                     com.dat.fence2$area:com.dat.fence2$plot + 
+                     com.dat.fence2$year:com.dat.fence2$area + com.dat.fence2$year:com.dat.fence2$plot + 
+                     com.dat.fence2$year:com.dat.fence2$area:com.dat.fence2$plot)
+
+trym2.f6 <- manyglm(com_bund_fence2 ~ com.dat.fence2$year + com.dat.fence2$area +    # no plot
+                     com.dat.fence2$worm.count + 
+                     com.dat.fence2$year:com.dat.fence2$area)
+
+trym2.f7 <- manyglm(com_bund_fence2 ~ com.dat.fence2$year + com.dat.fence2$plot +   # no area
+                     com.dat.fence2$worm.count + com.dat.fence2$year:com.dat.fence2$plot)
+
+trym2.f8 <- manyglm(com_bund_fence2 ~ com.dat.fence2$area + com.dat.fence2$plot +   # no year
+                     com.dat.fence2$worm.count + 
+                     com.dat.fence2$area:com.dat.fence2$plot)
+
+control.F2 <- how(within = Within(type = 'none'),
+                 plots = Plots(strata = com.dat.fence2$plot_type, type = 'free'),
+                 nperm = 1000)
+
+permutations.F2 <- shuffleSet(nrow(com_bund_fence2), control = control.F2)
+
+YPA.F2 <- anova(trym2.f0, trym2.f1, bootID = permutations.F2, p.uni = 'adjusted', test = 'LR')
+saveRDS(YPA.F, "Non-Invasive YPA Fenced.rds")
+YP.F2 <- anova(trym2.f0, trym2.f2, bootID = permutations.F2, p.uni = 'adjusted', test = 'LR')
+saveRDS(YP.F, "Non-Invasive YP Fenced.rds")
+YA.F2 <- anova(trym2.f0, trym2.f3, bootID = permutations.F2, p.uni = 'adjusted', test = 'LR')
+saveRDS(YA.F, "Non-Invasive YA Fenced.rds")
+AP.F2 <- anova(trym2.f0, trym2.f4, bootID = permutations.F2, p.uni = 'adjusted', test = 'LR')
+saveRDS(AP.F, "Non-Invasive AP Fenced.rds")
+worms.F2 <- anova(trym2.f0, trym2.f5, bootID = permutations.F2, p.uni = 'adjusted', test = 'LR')
+saveRDS(worms.F, "Non-Invasive Worms Fenced.rds")
+plot.F2 <- anova(trym2.f0, trym2.f6, bootID = permutations.F2, p.uni = 'adjusted', test = 'LR')
+saveRDS(YPA.F, "Non-Invasive Plot Fenced.rds")
+area.F2 <- anova(trym2.f0, trym2.f7, bootID = permutations.F2, p.uni = 'adjusted', test = 'LR')
+saveRDS(YPA.F, "Non-Invasive Area Fenced.rds")
+year.F2 <- anova(trym2.f0, trym2.f8, bootID = permutations.F2, p.uni = 'adjusted', test = 'LR')
+saveRDS(YPA.F, "Non-Invasive Year Fenced.rds")
+
+
+m.f.final2 <- manyglm(com_bund_fence2 ~ com.dat.fence2$year:com.dat.fence2$area + com.dat.fence2$worm.count +
+                        com.dat.fence2$plot + com.dat.fence2$area + com.dat.fence2$year)
+
+### FITTING MODELS FOR INVASION 
+
+control.I2 <- how(within = Within(type = 'none'),
+                 plots = Plots(strata = com.dat.invade2$plot_type, type = 'free'),
+                 nperm = 1000)
+
+permutations.I2 <- shuffleSet(nrow(com_bund_invade2), control = control.I2)
+
+trym2.i0 <- manyglm(com_bund_invade2 ~ com.dat.invade2$year + com.dat.invade2$area + com.dat.invade2$plot +   # complete model
+                     com.dat.invade2$worm.count + 
+                     com.dat.invade2$area:com.dat.invade2$plot + 
+                     com.dat.invade2$year:com.dat.invade2$area + com.dat.invade2$year:com.dat.invade2$plot + 
+                     com.dat.invade2$year:com.dat.invade2$area:com.dat.invade2$plot)
+
+trym2.i1 <- manyglm(com_bund_invade2 ~ com.dat.invade2$year + com.dat.invade2$area + com.dat.invade2$plot +   # no 3way
+                     com.dat.invade2$worm.count + 
+                     com.dat.invade2$area:com.dat.invade2$plot + 
+                     com.dat.invade2$year:com.dat.invade2$area + com.dat.invade2$year:com.dat.invade2$plot)
+
+trym2.i2 <- manyglm(com_bund_invade2 ~ com.dat.invade2$year + com.dat.invade2$area + com.dat.invade2$plot +   # no year:plot
+                     com.dat.invade2$worm.count + 
+                     com.dat.invade2$area:com.dat.invade2$plot + 
+                     com.dat.invade2$year:com.dat.invade2$area)
+
+trym2.i3 <- manyglm(com_bund_invade2 ~ com.dat.invade2$year + com.dat.invade2$area + com.dat.invade2$plot +   # no year:area
+                     com.dat.invade2$worm.count + 
+                     com.dat.invade2$area:com.dat.invade2$plot + 
+                     com.dat.invade2$year:com.dat.invade2$plot)
+
+trym2.i4 <- manyglm(com_bund_invade2 ~ com.dat.invade2$year + com.dat.invade2$area + com.dat.invade2$plot +   # no ara:plot
+                     com.dat.invade2$worm.count +
+                     com.dat.invade2$year:com.dat.invade2$area + com.dat.invade2$year:com.dat.invade2$plot)
+
+trym2.i5 <- manyglm(com_bund_invade2 ~ com.dat.invade2$year + com.dat.invade2$area + com.dat.invade2$plot +    # no worms
+                     com.dat.invade2$area:com.dat.invade2$plot + 
+                     com.dat.invade2$year:com.dat.invade2$area + com.dat.invade2$year:com.dat.invade2$plot + 
+                     com.dat.invade2$year:com.dat.invade2$area:com.dat.invade2$plot)
+
+trym2.i6 <- manyglm(com_bund_invade2 ~ com.dat.invade2$year + com.dat.invade2$area +    # no plot
+                     com.dat.invade2$worm.count + 
+                     com.dat.invade2$year:com.dat.invade2$area)
+
+trym2.i7 <- manyglm(com_bund_invade2 ~ com.dat.invade2$year + com.dat.invade2$plot +   # no area
+                     com.dat.invade2$worm.count + com.dat.invade2$year:com.dat.invade2$plot)
+
+trym2.i8 <- manyglm(com_bund_invade2 ~ com.dat.invade2$area + com.dat.invade2$plot +   # no year
+                     com.dat.invade2$worm.count + 
+                     com.dat.invade2$area:com.dat.invade2$plot)
+
+YPA.I2 <- anova(trym2.i0, trym2.i1, bootID = permutations.I2, p.uni = 'adjusted', test = 'LR')
+saveRDS(YPA.I, "Non-Invasive YPA Invaded.rds")
+YP.I2 <- anova(trym2.i0, trym2.i2, bootID = permutations.I2, p.uni = 'adjusted', test = 'LR')
+saveRDS(YP.I, "Non-Invasive YP Invaded.rds")
+YA.I2 <- anova(trym2.i0, trym2.i3, bootID = permutations.I2, p.uni = 'adjusted', test = 'LR')
+saveRDS(YA.I, "Non-Invasive YA Invaded.rds")
+AP.I2 <- anova(trym2.i0, trym2.i4, bootID = permutations.I2, p.uni = 'adjusted', test = 'LR')
+saveRDS(AP.I, "Non-Invasive AP Invaded.rds")
+worms.I2 <- anova(trym2.i0, trym2.i5, bootID = permutations.I2, p.uni = 'adjusted', test = 'LR')
+saveRDS(worms.I, "Non-Invasive Worms Invaded.rds")
+plot.I2 <- anova(trym2.i0, trym2.i6, bootID = permutations.I2, p.uni = 'adjusted', test = 'LR')
+saveRDS(YPA.I, "Non-Invasive Plot Invaded.rds")
+area.I2 <- anova(trym2.i0, trym2.i7, bootID = permutations.I2, p.uni = 'adjusted', test = 'LR')
+saveRDS(YPA.I, "Non-Invasive Area Invaded.rds")
+year.I2 <- anova(trym2.i0, trym2.i8, bootID = permutations.I2, p.uni = 'adjusted', test = 'LR')
+saveRDS(YPA.I, "Non-Invasive Year Invaded.rds")
+
+final.f2 <- manyglm(com_bund_fence ~ com.dat.fence$year + com.dat.fence$area + com.dat.fence$plot +   # complete model
+                     com.dat.fence$worm.count +
+                     com.dat.fence$year:com.dat.fence$area)
+
+final.i2 <- manyglm(com_bund_invade2 ~ com.dat.invade2$year + com.dat.invade2$area + com.dat.invade2$plot +   # complete model
+                     com.dat.invade2$worm.count + 
+                     com.dat.invade2$area:com.dat.invade2$plot + 
+                     com.dat.invade2$year:com.dat.invade2$area + com.dat.invade2$year:com.dat.invade2$plot + 
+                     com.dat.invade2$year:com.dat.invade2$area:com.dat.invade2$plot)
+
+final.output.F2 <- anova(final.f2, bootID = permutations.F2, p.uni = "adjusted")
+final.output.I2 <- anova(final.i2, bootID = permutations.I2, p.uni = "adjusted")
+saveRDS(final.output.F2, "MVABund Output Fencing Comparison Non-Invasive")
+saveRDS(final.output.I2, "MVABund Output Invasion Comparison Non-Invasive")
+
+## Exploring Deviance Values
+
+#tests.F <- as.data.frame(final.output.F[["uni.test"]])
+#rowSums(tests.F[which(colnames(tests.F) %in% forbspp)])/rowSums(tests.F)
+#rowSums(tests.F[which(colnames(tests.F) %in% gramspp)])/rowSums(tests.F)
+#rowSums(tests.F[which(colnames(tests.F) %in% woodyspp)])/rowSums(tests.F)
+
+#x <- as.data.frame(c(mydata[["identifiers"]], mydata[["veg_calc"]], mydata[["worms"]]))
+
+#ggplot(data = x, aes(x = year, y = sumwoody, fill = area)) + geom_bar(position = "dodge", stat = "summary", fun = "mean")
+#ggplot(data = x, aes(x = year, y = sumforb, fill = area)) + geom_bar(position = "dodge", stat = "summary", fun = "mean")
+#ggplot(data = x, aes(x = year, y = sumgram, fill = area)) + geom_bar(position = "dodge", stat = "summary", fun = "mean")
+
+#ggplot(data = x, aes(x = ew.count.mean, y = sumwoody)) + geom_point() + geom_smooth()
+#ggplot(data = x, aes(x = ew.count.mean, y = sumforb)) + geom_point() + geom_smooth()
+#ggplot(data = x, aes(x = ew.count.mean, y = sumgram)) + geom_point() + geom_smooth()
+
+#tests.I <- as.data.frame(final.output.I[["uni.test"]])
+#rowSums(tests.I[which(colnames(tests.I) %in% forbspp)])/rowSums(tests.I)
+#rowSums(tests.I[which(colnames(tests.I) %in% gramspp)])/rowSums(tests.I)
+#rowSums(tests.I[which(colnames(tests.I) %in% woodyspp)])/rowSums(tests.I)
+
+
+
+
+##### II. NATIVE ONLY
+
+### PREPARING DATA FOR MVABUND
+
+com.dat3 <- cbind.data.frame("site" = mydata$identifiers$site, "area" = mydata$identifiers$area, 
+                             "plot" = mydata$identifiers$plot, "plot_type" = plot_type, 
+                             "fencing" = fencing, "invaded" = invaded,
+                             "year" = year, "worm.mass" = worm.mass, "worm.count" = worm.count,
+                             "psw" = psw, round(natives))
+
+com.dat.fence3 <- com.dat3[com.dat3$invaded == "inv", ]
+com.dat.invade3 <- com.dat3[com.dat3$fencing == "O", ]
+
+com_bund_fence3 <- mvabund(com.dat.fence3[,11:65]) # transforms community data into mvabund appropriate object
+com_bund_invade3 <- mvabund(com.dat.invade3[,11:65])
+
+### FITTING MODELS FOR FENCING
+
+trym3.f0 <- manyglm(com_bund_fence3 ~ com.dat.fence3$year + com.dat.fence3$area + com.dat.fence3$plot +   # complete model
+                      com.dat.fence3$worm.count + 
+                      com.dat.fence3$area:com.dat.fence3$plot + 
+                      com.dat.fence3$year:com.dat.fence3$area + com.dat.fence3$year:com.dat.fence3$plot + 
+                      com.dat.fence3$year:com.dat.fence3$area:com.dat.fence3$plot)
+
+trym3.f1 <- manyglm(com_bund_fence3 ~ com.dat.fence3$year + com.dat.fence3$area + com.dat.fence3$plot +   # no 3way
+                      com.dat.fence3$worm.count + 
+                      com.dat.fence3$area:com.dat.fence3$plot + 
+                      com.dat.fence3$year:com.dat.fence3$area + com.dat.fence3$year:com.dat.fence3$plot)
+
+trym3.f2 <- manyglm(com_bund_fence3 ~ com.dat.fence3$year + com.dat.fence3$area + com.dat.fence3$plot +   # no year:plot
+                      com.dat.fence3$worm.count + 
+                      com.dat.fence3$area:com.dat.fence3$plot + 
+                      com.dat.fence3$year:com.dat.fence3$area)
+
+trym3.f3 <- manyglm(com_bund_fence3 ~ com.dat.fence3$year + com.dat.fence3$area + com.dat.fence3$plot +   # no year:area
+                      com.dat.fence3$worm.count + 
+                      com.dat.fence3$area:com.dat.fence3$plot + 
+                      com.dat.fence3$year:com.dat.fence3$plot)
+
+trym3.f4 <- manyglm(com_bund_fence3 ~ com.dat.fence3$year + com.dat.fence3$area + com.dat.fence3$plot +   # no ara:plot
+                      com.dat.fence3$worm.count +
+                      com.dat.fence3$year:com.dat.fence3$area + com.dat.fence3$year:com.dat.fence3$plot)
+
+trym3.f5 <- manyglm(com_bund_fence3 ~ com.dat.fence3$year + com.dat.fence3$area + com.dat.fence3$plot +    # no worms
+                      com.dat.fence3$area:com.dat.fence3$plot + 
+                      com.dat.fence3$year:com.dat.fence3$area + com.dat.fence3$year:com.dat.fence3$plot + 
+                      com.dat.fence3$year:com.dat.fence3$area:com.dat.fence3$plot)
+
+trym3.f6 <- manyglm(com_bund_fence3 ~ com.dat.fence3$year + com.dat.fence3$area +    # no plot
+                      com.dat.fence3$worm.count + 
+                      com.dat.fence3$year:com.dat.fence3$area)
+
+trym3.f7 <- manyglm(com_bund_fence3 ~ com.dat.fence3$year + com.dat.fence3$plot +   # no area
+                      com.dat.fence3$worm.count + com.dat.fence3$year:com.dat.fence3$plot)
+
+trym3.f8 <- manyglm(com_bund_fence3 ~ com.dat.fence3$area + com.dat.fence3$plot +   # no year
+                      com.dat.fence3$worm.count + 
+                      com.dat.fence3$area:com.dat.fence3$plot)
+
+control.F3 <- how(within = Within(type = 'none'),
+                  plots = Plots(strata = com.dat.fence3$plot_type, type = 'free'),
+                  nperm = 1000)
+
+permutations.F3 <- shuffleSet(nrow(com_bund_fence3), control = control.F3)
+
+YPA.F3 <- anova(trym3.f0, trym3.f1, bootID = permutations.F3, p.uni = 'adjusted', test = 'LR')
+saveRDS(YPA.F, "Native YPA Fenced.rds")
+YP.F3 <- anova(trym3.f0, trym3.f2, bootID = permutations.F3, p.uni = 'adjusted', test = 'LR')
+saveRDS(YP.F, "Native YP Fenced.rds")
+YA.F3 <- anova(trym3.f0, trym3.f3, bootID = permutations.F3, p.uni = 'adjusted', test = 'LR')
+saveRDS(YA.F, "Native YA Fenced.rds")
+AP.F3 <- anova(trym3.f0, trym3.f4, bootID = permutations.F3, p.uni = 'adjusted', test = 'LR')
+saveRDS(AP.F, "Native AP Fenced.rds")
+worms.F3 <- anova(trym3.f0, trym3.f5, bootID = permutations.F3, p.uni = 'adjusted', test = 'LR')
+saveRDS(worms.F, "Native Worms Fenced.rds")
+plot.F3 <- anova(trym3.f0, trym3.f6, bootID = permutations.F3, p.uni = 'adjusted', test = 'LR')
+saveRDS(YPA.F, "Native Plot Fenced.rds")
+area.F3 <- anova(trym3.f0, trym3.f7, bootID = permutations.F3, p.uni = 'adjusted', test = 'LR')
+saveRDS(YPA.F, "Native Area Fenced.rds")
+year.F3 <- anova(trym3.f0, trym3.f8, bootID = permutations.F3, p.uni = 'adjusted', test = 'LR')
+saveRDS(YPA.F, "Native Year Fenced.rds")
+
+
+#m.f.final2 <- manyglm(com_bund_fence3 ~ )
+
+### FITTING MODELS FOR INVASION 
+
+control.I3 <- how(within = Within(type = 'none'),
+                  plots = Plots(strata = com.dat.invade3$plot_type, type = 'free'),
+                  nperm = 1000)
+
+permutations.I3 <- shuffleSet(nrow(com_bund_invade3), control = control.I3)
+
+trym3.i0 <- manyglm(com_bund_invade3 ~ com.dat.invade3$year + com.dat.invade3$area + com.dat.invade3$plot +   # complete model
+                      com.dat.invade3$worm.count + 
+                      com.dat.invade3$area:com.dat.invade3$plot + 
+                      com.dat.invade3$year:com.dat.invade3$area + com.dat.invade3$year:com.dat.invade3$plot + 
+                      com.dat.invade3$year:com.dat.invade3$area:com.dat.invade3$plot)
+
+trym3.i1 <- manyglm(com_bund_invade3 ~ com.dat.invade3$year + com.dat.invade3$area + com.dat.invade3$plot +   # no 3way
+                      com.dat.invade3$worm.count + 
+                      com.dat.invade3$area:com.dat.invade3$plot + 
+                      com.dat.invade3$year:com.dat.invade3$area + com.dat.invade3$year:com.dat.invade3$plot)
+
+trym3.i2 <- manyglm(com_bund_invade3 ~ com.dat.invade3$year + com.dat.invade3$area + com.dat.invade3$plot +   # no year:plot
+                      com.dat.invade3$worm.count + 
+                      com.dat.invade3$area:com.dat.invade3$plot + 
+                      com.dat.invade3$year:com.dat.invade3$area)
+
+trym3.i3 <- manyglm(com_bund_invade3 ~ com.dat.invade3$year + com.dat.invade3$area + com.dat.invade3$plot +   # no year:area
+                      com.dat.invade3$worm.count + 
+                      com.dat.invade3$area:com.dat.invade3$plot + 
+                      com.dat.invade3$year:com.dat.invade3$plot)
+
+trym3.i4 <- manyglm(com_bund_invade3 ~ com.dat.invade3$year + com.dat.invade3$area + com.dat.invade3$plot +   # no ara:plot
+                      com.dat.invade3$worm.count +
+                      com.dat.invade3$year:com.dat.invade3$area + com.dat.invade3$year:com.dat.invade3$plot)
+
+trym3.i5 <- manyglm(com_bund_invade3 ~ com.dat.invade3$year + com.dat.invade3$area + com.dat.invade3$plot +    # no worms
+                      com.dat.invade3$area:com.dat.invade3$plot + 
+                      com.dat.invade3$year:com.dat.invade3$area + com.dat.invade3$year:com.dat.invade3$plot + 
+                      com.dat.invade3$year:com.dat.invade3$area:com.dat.invade3$plot)
+
+trym3.i6 <- manyglm(com_bund_invade3 ~ com.dat.invade3$year + com.dat.invade3$area +    # no plot
+                      com.dat.invade3$worm.count + 
+                      com.dat.invade3$year:com.dat.invade3$area)
+
+trym3.i7 <- manyglm(com_bund_invade3 ~ com.dat.invade3$year + com.dat.invade3$plot +   # no area
+                      com.dat.invade3$worm.count + com.dat.invade3$year:com.dat.invade3$plot)
+
+trym3.i8 <- manyglm(com_bund_invade3 ~ com.dat.invade3$area + com.dat.invade3$plot +   # no year
+                      com.dat.invade3$worm.count + 
+                      com.dat.invade3$area:com.dat.invade3$plot)
+
+YPA.I3 <- anova(trym3.i0, trym3.i1, bootID = permutations.I3, p.uni = 'adjusted', test = 'LR')
+saveRDS(YPA.I, "Native YPA Invaded.rds")
+YP.I3 <- anova(trym3.i0, trym3.i2, bootID = permutations.I3, p.uni = 'adjusted', test = 'LR')
+saveRDS(YP.I, "Native YP Invaded.rds")
+YA.I3 <- anova(trym3.i0, trym3.i3, bootID = permutations.I3, p.uni = 'adjusted', test = 'LR')
+saveRDS(YA.I, "Native YA Invaded.rds")
+AP.I3 <- anova(trym3.i0, trym3.i4, bootID = permutations.I3, p.uni = 'adjusted', test = 'LR')
+saveRDS(AP.I, "Native AP Invaded.rds")
+worms.I3 <- anova(trym3.i0, trym3.i5, bootID = permutations.I3, p.uni = 'adjusted', test = 'LR')
+saveRDS(worms.I, "Native Worms Invaded.rds")
+plot.I3 <- anova(trym3.i0, trym3.i6, bootID = permutations.I3, p.uni = 'adjusted', test = 'LR')
+saveRDS(YPA.I, "Native Plot Invaded.rds")
+area.I3 <- anova(trym3.i0, trym3.i7, bootID = permutations.I3, p.uni = 'adjusted', test = 'LR')
+saveRDS(YPA.I, "Native Area Invaded.rds")
+year.I3 <- anova(trym3.i0, trym3.i8, bootID = permutations.I3, p.uni = 'adjusted', test = 'LR')
+saveRDS(YPA.I, "Native Year Invaded.rds")
+
+final.f3 <- manyglm(com_bund_fence3 ~ com.dat.fence3$year + com.dat.fence3$area + com.dat.fence3$plot +   # complete model
+com.dat.fence3$worm.count +
+  com.dat.fence3$year:com.dat.fence3$area)
+
+final.i3 <- manyglm(com_bund_invade3 ~ com.dat.invade3$year + com.dat.invade3$area + com.dat.invade3$plot +   # complete model
+com.dat.invade3$worm.count + 
+  com.dat.invade3$area:com.dat.invade3$plot + 
+  com.dat.invade3$year:com.dat.invade3$area + com.dat.invade3$year:com.dat.invade3$plot + 
+  com.dat.invade3$year:com.dat.invade3$area:com.dat.invade3$plot)
+
+final.output.F3 <- anova(final.f3, bootID = permutations.F3, p.uni = "adjusted")
+final.output.I3 <- anova(final.i3, bootID = permutations.I3, p.uni = "adjusted")
+saveRDS(final.output.F3, "MVABund Output Fencing Comparison Native")
+saveRDS(final.output.I3, "MVABund Output Invasion Comparison Native")
+
+## Exploring Deviance Values
+
+#tests.F <- as.data.frame(final.output.F[["uni.test"]])
+#rowSums(tests.F[which(colnames(tests.F) %in% forbspp)])/rowSums(tests.F)
+#rowSums(tests.F[which(colnames(tests.F) %in% gramspp)])/rowSums(tests.F)
+#rowSums(tests.F[which(colnames(tests.F) %in% woodyspp)])/rowSums(tests.F)
+
+#x <- as.data.frame(c(mydata[["identifiers"]], mydata[["veg_calc"]], mydata[["worms"]]))
+
+#ggplot(data = x, aes(x = year, y = sumwoody, fill = area)) + geom_bar(position = "dodge", stat = "summary", fun = "mean")
+#ggplot(data = x, aes(x = year, y = sumforb, fill = area)) + geom_bar(position = "dodge", stat = "summary", fun = "mean")
+#ggplot(data = x, aes(x = year, y = sumgram, fill = area)) + geom_bar(position = "dodge", stat = "summary", fun = "mean")
+
+#ggplot(data = x, aes(x = ew.count.mean, y = sumwoody)) + geom_point() + geom_smooth()
+#ggplot(data = x, aes(x = ew.count.mean, y = sumforb)) + geom_point() + geom_smooth()
+#ggplot(data = x, aes(x = ew.count.mean, y = sumgram)) + geom_point() + geom_smooth()
+
+#tests.I <- as.data.frame(final.output.I[["uni.test"]])
+#rowSums(tests.I[which(colnames(tests.I) %in% forbspp)])/rowSums(tests.I)
+#rowSums(tests.I[which(colnames(tests.I) %in% gramspp)])/rowSums(tests.I)
+#rowSums(tests.I[which(colnames(tests.I) %in% woodyspp)])/rowSums(tests.I)
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ### FITTING MODELS
 

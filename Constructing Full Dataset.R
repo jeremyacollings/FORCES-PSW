@@ -93,7 +93,7 @@ for(i in 1:dim(dat)[[1]]){
   sumwoody <- sum(x[which(colnames(x) %in% woodyspp)])
   sumtotal <- sum(x)
   sumcover <- rbind.data.frame(
-  sumcover, cbind.data.frame(year= sumtotal, sumnat, sumnis, sumforb, sumgram, sumwoody))
+  sumcover, cbind.data.frame(tot= sumtotal, sumnat, sumnis, sumforb, sumgram, sumwoody))
 }
 
 avecover <- c()
