@@ -495,7 +495,7 @@ invade.m1.3 <- manyglm(com_bund_invade3 ~ com.dat.invade3$year + com.dat.invade3
 
 apy.i.3 <- anova.manyglm(invade.m0.3, invade.m1.3, bootID = permutations.I3, p.uni = 'adjusted', test = 'LR')
 
-apy.i.3 # dev = 17.38; p = 0.032
+apy.i.3 # dev = 17.38; p = 0.032 *
 
 # three-way interaction came out as significant so I3 will include all two-way
 # interactions and test singular effect of earthworm count
@@ -507,7 +507,7 @@ invade.m2.3 <- manyglm(com_bund_invade3 ~ com.dat.invade3$year + com.dat.invade3
 
 ew.i.3 <- anova.manyglm(invade.m0.3, invade.m2.3, bootID = permutations.I3, p.uni = 'adjusted', test = 'LR')
 
-ew.i.3 # dev = 382.8; p = 0.001
+ew.i.3 # dev = 382.8; p = 0.001 ***
 
 # earthworm count came out as significant
 
@@ -522,4 +522,260 @@ invade.final.3.output <- anova.manyglm(invade.final.3, bootID = permutations.I3,
 
 ##### IV. PIE CHARTS
 
-fence.final
+### FOR FENCING COMPARISON
+
+`%!in%` <- Negate(`%in%`)
+
+fence.dev <- as.data.frame(fence.final$deviance)
+fence.dev <- rename(fence.dev, 'dev' = 'fence.final$deviance')
+fence.dev$spp <- rownames(fence.dev)
+fence.dev$lifeform[fence.dev$spp %in% forbspp] <- "forb"
+fence.dev$lifeform[fence.dev$spp %in% woodyspp] <- "woody"
+fence.dev$lifeform[fence.dev$spp %in% gramspp] <- "gram"
+fence.dev$lifeform[is.na(fence.dev$lifeform)] <- "fern"
+fence.dev$percentdev <- fence.dev$dev/sum(fence.dev$dev)
+included_taxa <- fence.dev$spp[fence.dev$percentdev > 0.025]
+remaining_forbs <- sum(fence.dev$dev[fence.dev$lifeform == "forb" & fence.dev$spp %!in% included_taxa])
+remaining_forbs_cent <- remaining_forbs/sum(fence.dev$dev)
+remaining_woody<- sum(fence.dev$dev[fence.dev$lifeform == "woody" & fence.dev$spp %!in% included_taxa])
+remaining_woody_cent <- remaining_woody/sum(fence.dev$dev)
+remaining_gram <- sum(fence.dev$dev[fence.dev$lifeform == "gram" &fence.dev$spp %!in% included_taxa])
+remaining_gram_cent <- remaining_gram/sum(fence.dev$dev)
+
+fence.dev <- fence.dev[fence.dev$spp %in% included_taxa, ]
+
+fence.dev <- rbind.data.frame(fence.dev, c(remaining_forbs, "restforbs", "forb", remaining_forbs_cent), 
+                              c(remaining_woody, "restwoody", "woody", remaining_woody_cent), 
+                              c(remaining_gram, "restgram", "gram", remaining_gram_cent))
+
+fence.dev %>%
+  mutate(spp = factor(x = spp,
+                     levels = c("allpet", "galsp", "germac",
+                                "gerrob", "restforbs",
+                                "dacglo", "restgram", "acesac",
+                                "frasp", "lonsp", "parqui",
+                                "pinstr", "rhacat",
+                                "rosmul", "toxrad", 
+                                "restwoody")), # ideally you should specify the order explicitly
+         label = factor(x = c("allpet", "galsp", "germac",
+                              "gerrob", "restforbs",
+                              "dacglo", "restgram", "acesac",
+                              "frasp", "lonsp", "parqui",
+                              "pinstr", "rhacat",
+                              "rosmul", "toxrad", 
+                              "restwoody"),
+                        levels = c("allpet", "galsp", "germac",
+                                   "gerrob", "restforbs",
+                                   "dacglo", "restgram", "acesac",
+                                   "frasp", "lonsp", "parqui",
+                                   "pinstr", "rhacat",
+                                   "rosmul", "toxrad", 
+                                   "restwoody"))) %>% # same as above note
+  
+  ggplot(mapping = aes(x = 2,
+                       y = as.numeric(percentdev),
+                       fill = spp)) +
+  
+  geom_bar(stat = "identity", position = "stack") + 
+  
+  coord_polar(theta = "y",
+              start = 0,
+              direction = 1) + 
+  
+  scale_fill_manual(name = "Species",
+                    values = c("allpet" = "#1F336F", "galsp" = "#607CD2", "germac" = "#27408B",
+                                   "gerrob" = "#8097DB", "restforbs" = "#3151AF",
+                                   "dacglo" = "#00B800", "restgram" = "#008B00", "acesac" = "#DAA520",
+                                   "frasp" = "#8E6C15", "lonsp" = "#E2B33C", "parqui" = "#A0791B",
+                                   "pinstr" = "#E4BA4E", "rhacat" = "#B1871B",
+                                   "rosmul" = "#E7C15F", "toxrad" = "#C3941D", 
+                                   "restwoody" = "#EAC871"),
+                    labels = c(expression(italic("Alliaria petiolata")), 
+                               expression(italic("Galium") ~ "spp."), 
+                               expression(italic("Geranium maculatum")),
+                               expression(italic("Geranium robertianum")), 
+                               "Other Forbs", 
+                               expression(italic("Dactylis glomerata")), 
+                               "Other Graminoids", 
+                               expression(italic("Acer saccharum")), 
+                               expression(italic("Fraxinus") ~ "spp."), 
+                               expression(italic("Lonicera") ~ "spp."), 
+                               expression(italic("Parthenocissus quinquefolia")), 
+                               expression(italic("Pinus strobus")), 
+                               expression(italic("Rhamnus catharticus")), 
+                               expression(italic("Rosa multiflora")), 
+                               expression(italic("Toxicodendron radicans")),
+                               "Other Woody Plants")) +
+  
+  geom_segment(aes(x = 2.55, y = 0.005, 
+                   xend = 2.55, yend = sum(as.numeric(fence.dev$percentdev[fence.dev$lifeform == "woody"])) - 0.005), 
+               size = .5) +
+  
+  geom_segment(aes(x = 2.55, y = sum(as.numeric(fence.dev$percentdev[fence.dev$lifeform == "woody"])) + 0.005, 
+                   xend = 2.55, yend = sum(as.numeric(fence.dev$percentdev[fence.dev$lifeform == "woody"])) + sum(as.numeric(fence.dev$percentdev[fence.dev$lifeform == "gram"])) - 0.005), 
+               size = .5) +
+  
+  geom_segment(aes(x = 2.55, y = sum(as.numeric(fence.dev$percentdev[fence.dev$lifeform == "woody"])) + sum(as.numeric(fence.dev$percentdev[fence.dev$lifeform == "gram"])) + 0.005, 
+                   xend = 2.55, yend = sum(as.numeric(fence.dev$percentdev)) - 0.005),
+               size = .5) +
+  
+  annotate("text", x = 2.61, y = sum(as.numeric(fence.dev$percentdev[fence.dev$lifeform == "woody"]))/2, label = "Woody Plants", angle = -88, size = 4) +
+  
+  annotate("text", x = 2.61, y = sum(as.numeric(fence.dev$percentdev[fence.dev$lifeform == "gram"]))/2 + sum(as.numeric(fence.dev$percentdev[fence.dev$lifeform == "woody"])), label = "Gram.", angle = -195, size = 4) +
+  
+  annotate("text", x = 2.61, y = sum(as.numeric(fence.dev$percentdev[fence.dev$lifeform == "forb"]))/2 + sum(as.numeric(fence.dev$percentdev[fence.dev$lifeform == "woody"])) + sum(as.numeric(fence.dev$percentdev[fence.dev$lifeform == "gram"])), label = "Forbs", angle = 75, size = 4) +
+  
+  theme_void() +
+  
+  theme(legend.text.align = 0)
+
+
+### FOR INVASION COMPARISON
+
+
+`%!in%` <- Negate(`%in%`)
+
+invade.dev <- as.data.frame(invade.final$deviance)
+invade.dev <- rename(invade.dev, 'dev' = 'invade.final$deviance')
+invade.dev$spp <- rownames(invade.dev)
+invade.dev$lifeform[invade.dev$spp %in% forbspp] <- "forb"
+invade.dev$lifeform[invade.dev$spp %in% woodyspp] <- "woody"
+invade.dev$lifeform[invade.dev$spp %in% gramspp] <- "gram"
+invade.dev$lifeform[is.na(invade.dev$lifeform)] <- "fern"
+invade.dev$percentdev <- invade.dev$dev/sum(invade.dev$dev)
+included_taxa <- invade.dev$spp[invade.dev$percentdev > 0.025]
+remaining_forbs <- sum(invade.dev$dev[invade.dev$lifeform == "forb" & invade.dev$spp %!in% included_taxa])
+remaining_forbs_cent <- remaining_forbs/sum(invade.dev$dev)
+remaining_woody<- sum(invade.dev$dev[invade.dev$lifeform == "woody" & invade.dev$spp %!in% included_taxa])
+remaining_woody_cent <- remaining_woody/sum(invade.dev$dev)
+remaining_gram <- sum(invade.dev$dev[invade.dev$lifeform == "gram" &invade.dev$spp %!in% included_taxa])
+remaining_gram_cent <- remaining_gram/sum(invade.dev$dev)
+
+invade.dev <- invade.dev[invade.dev$spp %in% included_taxa, ]
+
+invade.dev <- rbind.data.frame(invade.dev, c(remaining_forbs, "restforbs", "forb", remaining_forbs_cent), 
+                              c(remaining_woody, "restwoody", "woody", remaining_woody_cent), 
+                              c(remaining_gram, "restgram", "gram", remaining_gram_cent))
+
+invade.dev %>%
+  mutate(spp = factor(x = spp,
+                      levels = c("allpet", "galsp",
+                                 "gerrob", "restforbs",
+                                 "restgram", "acerub", "acesac",
+                                 "frasp", "parqui",
+                                 "pinstr", "toxrad", 
+                                 "restwoody")), # ideally you should specify the order explicitly
+         label = factor(x = c("allpet", "galsp",
+                              "gerrob", "restforbs",
+                              "restgram", "acerub", "acesac",
+                              "frasp", "parqui",
+                              "pinstr", "toxrad", 
+                              "restwoody"),
+                        levels = c("allpet", "galsp",
+                                   "gerrob", "restforbs",
+                                   "restgram", "acerub", "acesac",
+                                   "frasp", "parqui",
+                                   "pinstr", "toxrad", 
+                                   "restwoody"))) %>% # same as above note
+  
+  ggplot(mapping = aes(x = 2,
+                       y = as.numeric(percentdev),
+                       fill = spp)) +
+  
+  geom_bar(stat = "identity", position = "stack") + 
+  
+  coord_polar(theta = "y",
+              start = 0,
+              direction = 1) + 
+  
+  scale_fill_manual(name = "Species",
+                    values = c("allpet" = "#1F3365", "galsp" = "#607CD2",
+                               "gerrob" = "#27408B", "restforbs" = "#8097DB",
+                               "restgram" = "#008B00", "acerub" = "#E2B33C", 
+                               "acesac" = "#8E6C15", "frasp" = "#E4BA4E", 
+                               "parqui" = "#A0791B", "pinstr" = "#E7C15F", 
+                               "toxrad" = "#B1871B", "restwoody" = "#EAC871"),
+                    labels = c(expression(italic("Alliaria petiolata")), 
+                               expression(italic("Galium") ~ "spp."),
+                               expression(italic("Geranium robertianum")), 
+                               "Other Forbs", 
+                               "Graminoids", 
+                               expression(italic("Acer rubrum")), 
+                               expression(italic("Acer saccharum")), 
+                               expression(italic("Fraxinus") ~ "spp."),
+                               expression(italic("Parthenocissus quinquefolia")), 
+                               expression(italic("Pinus strobus")),
+                               expression(italic("Toxicodendron radicans")),
+                               "Other Woody Plants")) +
+  
+  geom_segment(aes(x = 2.55, y = 0.005, 
+                   xend = 2.55, yend = sum(as.numeric(invade.dev$percentdev[invade.dev$lifeform == "woody"])) - 0.005), 
+               size = .5) +
+  
+  geom_segment(aes(x = 2.55, y = sum(as.numeric(invade.dev$percentdev[invade.dev$lifeform == "woody"])) + 0.005, 
+                   xend = 2.55, yend = sum(as.numeric(invade.dev$percentdev[invade.dev$lifeform == "woody"])) + sum(as.numeric(invade.dev$percentdev[invade.dev$lifeform == "gram"])) - 0.005), 
+               size = .5) +
+  
+  geom_segment(aes(x = 2.55, y = sum(as.numeric(invade.dev$percentdev[invade.dev$lifeform == "woody"])) + sum(as.numeric(invade.dev$percentdev[invade.dev$lifeform == "gram"])) + 0.005, 
+                   xend = 2.55, yend = sum(as.numeric(invade.dev$percentdev)) - 0.005),
+               size = .5) +
+  
+  annotate("text", x = 2.61, y = sum(as.numeric(invade.dev$percentdev[invade.dev$lifeform == "woody"]))/2, label = "Woody Plants", angle = -101, size = 4) +
+  
+  annotate("text", x = 2.61, y = sum(as.numeric(invade.dev$percentdev[invade.dev$lifeform == "gram"]))/2 + sum(as.numeric(invade.dev$percentdev[invade.dev$lifeform == "woody"])), label = "Gram.", angle = -208, size = 4) +
+  
+  annotate("text", x = 2.61, y = sum(as.numeric(invade.dev$percentdev[invade.dev$lifeform == "forb"]))/2 + sum(as.numeric(invade.dev$percentdev[invade.dev$lifeform == "woody"])) + sum(as.numeric(invade.dev$percentdev[invade.dev$lifeform == "gram"])), label = "Forbs", angle = 73, size = 4) +
+  
+  theme_void() +
+  
+  theme(legend.text.align = 0)
+
+### Quick Visualization of Species Level Trends
+
+# Acer saccharum abundance ~ Fencing
+
+acesac1 <- dat$acesac[dat$year == 1]
+acesac3 <- dat$acesac[dat$year == 3]
+acesacdiff <- acesac3 - acesac1
+acesacdat <- cbind.data.frame("diff" = acesacdiff, "site" = dat$site[dat$year == 1], "area" = dat$area[dat$year == 1], "plot" = dat$plot[dat$year == 1])
+
+ggplot(data = acesacdat[!acesacdat$plot == "N",], aes(x = area, y = diff, fill = plot)) + geom_bar(position = "dodge", stat = "summary", fun.y = "mean") + facet_wrap(~ site)
+
+# Acer saccharum abundance ~ Invasion
+
+ggplot(data = dat[!dat$plot == "F",], aes(x = area, y = acesac, fill = plot)) + geom_bar(position = "dodge", stat = "summary", fun.y = "mean") + facet_wrap(year ~ site)
+
+# Alliaria petiolata ~ Fencing
+
+allpet1 <- dat$allpet[dat$year == 1]
+allpet3 <- dat$allpet[dat$year == 3]
+allpetdiff <- allpet3 - allpet1
+allpetdat <- cbind.data.frame("diff" = allpetdiff, "site" = dat$site[dat$year == 1], "area" = dat$area[dat$year == 1], "plot" = dat$plot[dat$year == 1])
+
+ggplot(data = allpetdat[!allpetdat$plot == "N",], aes(x = area, y = diff, fill = plot)) + geom_bar(position = "dodge", stat = "summary", fun.y = "mean") + facet_wrap(~ site)
+
+# Alliaria petiolata ~ Invasion
+
+ggplot(data = dat[!dat$plot == "F",], aes(x = area, y = allpet, fill = plot)) + geom_bar(position = "dodge", stat = "summary", fun.y = "mean") + facet_wrap(year ~ site)
+
+# Fraxinus spp. ~ Fencing
+
+frasp1 <- dat$frasp[dat$year == 1]
+frasp3 <- dat$frasp[dat$year == 3]
+fraspdiff <- frasp3 - frasp1
+fraspdat <- cbind.data.frame("diff" = fraspdiff, "site" = dat$site[dat$year == 1], "area" = dat$area[dat$year == 1], "plot" = dat$plot[dat$year == 1])
+
+ggplot(data = fraspdat[!fraspdat$plot == "N",], aes(x = area, y = diff, fill = plot)) + geom_bar(position = "dodge", stat = "summary", fun.y = "mean") + facet_wrap(~ site)
+
+# Fraxinus spp. ~ Invasion
+
+ggplot(data = dat[!dat$plot == "F",], aes(x = area, y = frasp, fill = plot)) + geom_bar(position = "dodge", stat = "summary", fun.y = "mean") + facet_wrap(year ~ site)
+
+# Parthenocissus quinquefolia ~ Invasion
+
+ggplot(data = dat[!dat$plot == "F",], aes(x = area, y = parqui, fill = plot)) + geom_bar(position = "dodge", stat = "summary", fun.y = "mean") + facet_wrap(year ~ site)
+
+# Pinus strobus ~ Invasion
+
+ggplot(data = dat, aes(x = area, y = pinstr, fill = plot)) + geom_bar(position = "dodge", stat = "summary", fun.y = "mean") + facet_wrap(year ~ site)
+

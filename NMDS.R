@@ -97,7 +97,6 @@ ggplot() + geom_point(data = com.scores, aes(x = NMDS1, y = NMDS2, color = site,
   scale_y_continuous(limits = c(-1, 1)) +
   theme(panel.border = element_rect(colour = "black", fill=NA, size=1))
 
-ggsave("NMDS by Site and Year.pdf")
 
 ### PREPPING AREA-PLOT DATA
 
@@ -359,7 +358,6 @@ TG.P <- ggplot() + geom_point(data = com.scores.TG, aes(x = NMDS1, y = NMDS2, co
 
 (BM.A | BM.P) / (GL.A | GL.P) / (TG.A | TG.P) + plot_layout(guides="collect")
 
-ggsave("NMDS by Area and Plot.pdf")
 
 
 
@@ -447,8 +445,6 @@ ggplot() + geom_point(data = com.scores2, aes(x = NMDS1, y = NMDS2, color = site
   #scale_x_continuous(limits = c(-1, 1)) +
   #scale_y_continuous(limits = c(-.75, .75)) +
   theme(panel.border = element_rect(colour = "black", fill=NA, size=1))
-
-ggsave("NMDS by Site and Year Non-Invasives.pdf")
 
 ### PREPPING AREA-PLOT DATA
 
@@ -710,9 +706,6 @@ TG.P2 <- ggplot() + geom_point(data = com.scores.TG2, aes(x = NMDS1, y = NMDS2, 
 
 (BM.A2 | BM.P2) / (GL.A2 | GL.P2) / (TG.A2 | TG.P2) + plot_layout(guides="collect")
 
-ggsave("NMDS by Area and Plot Non-Invasives.pdf")
-
-
 
 
 
@@ -794,7 +787,7 @@ ggplot() + geom_point(data = com.scores3, aes(x = NMDS1, y = NMDS2, color = site
   #scale_y_continuous(limits = c(-.75, .75)) +
   theme(panel.border = element_rect(colour = "black", fill=NA, size=1))
 
-ggsave("NMDS by Site and Year Natives.pdf")
+
 
 ### PREPPING AREA-PLOT DATA
 
@@ -1055,5 +1048,3 @@ TG.P3 <- ggplot() + geom_point(data = com.scores.TG3, aes(x = NMDS1, y = NMDS2, 
 
 
 (BM.A3 | BM.P3) / (GL.A3 | GL.P3) / (TG.A3 | TG.P3) + plot_layout(guides="collect")
-
-ggsave("NMDS by Area and Plot Natives.pdf")
